@@ -398,3 +398,12 @@ output/
 
 # JetBrains Rider
 *.sln.iml
+
+out
+server
+node_modules
+*.vsix
+.vscode-test
+coverage
+avaloniaServer
+solutionParserTool
