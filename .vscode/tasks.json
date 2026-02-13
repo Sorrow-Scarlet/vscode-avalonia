@@ -13,7 +13,7 @@
                 "isDefault": true
             },
             "isBackground": true,
-            "problemMatcher": "$tsc-watch",
+            "problemMatcher": "$esbuild-watch"
         }
     ]
 }
