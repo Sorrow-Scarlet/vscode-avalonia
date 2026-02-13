@@ -19,8 +19,8 @@
 
     <ItemGroup>
         <ProjectReference
-            Include="..\..\AvaloniaVS\CompletionEngine\Avalonia.Ide.CompletionEngine.DnlibMetadataProvider\Avalonia.Ide.CompletionEngine.DnlibMetadataProvider.csproj" />
+            Include="..\..\submodules\vs-avalonia\CompletionEngine\Avalonia.Ide.CompletionEngine.DnlibMetadataProvider\Avalonia.Ide.CompletionEngine.DnlibMetadataProvider.csproj" />
         <ProjectReference
-            Include="..\..\AvaloniaVS\CompletionEngine\Avalonia.Ide.CompletionEngine\Avalonia.Ide.CompletionEngine.csproj" />
+            Include="..\..\submodules\vs-avalonia\CompletionEngine\Avalonia.Ide.CompletionEngine\Avalonia.Ide.CompletionEngine.csproj" />
     </ItemGroup>
 </Project>

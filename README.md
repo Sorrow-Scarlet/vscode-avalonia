@@ -1,5 +1,7 @@
 # Avalonia for Visual Studio Code
 
+> **This extension is a fork of [AvaloniaVSCode](https://github.com/AvaloniaUI/AvaloniaVSCode), published under the MIT License.**
+
 Avalonia is a cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows via .NET Framework and .NET Core, Linux via Xorg and macOS.
 
 The Avalonia for Visual Studio Code Extension contains support for Avalonia XAML autocomplete and previewer.
@@ -14,7 +16,7 @@ Follow the [contribution guide](CONTRIBUTING.md) if you want to help us build th
 
 You can create a new Avalonia project directly from the Visual Studio Code
 
-![New Project](https://raw.githubusercontent.com/AvaloniaUI/AvaloniaVSCode/main/media/NewProject.png)
+![New Project](media/NewProject.png)
 
 Additionally, you can create a project from the command line too, with the command:
 
@@ -30,7 +32,7 @@ Finally open the MyApp folder in the VS Code, open any axaml file to activate th
 
 ### Enable Previewer
 
-![Previewer](https://raw.githubusercontent.com/AvaloniaUI/AvaloniaVSCode/main/media/PreviewerRM.png)
+![Previewer](media/PreviewerRM.png)
 
 After you load the project in the VS Code, you can click on Show Preview button on the editor toolbar (1)
 
@@ -44,4 +46,4 @@ The Avalonia XAML in the VS Code is powered by the same code completion engine a
 
 Rich syntax highlighter and contextual code complete will make it lot easier to read and write XAML files
 
-![Code completion](https://raw.githubusercontent.com/AvaloniaUI/AvaloniaVSCode/main/media/AutoCompleteRM.png)
+![Code completion](media/AutoCompleteRM.png)

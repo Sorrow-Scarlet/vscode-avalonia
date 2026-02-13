@@ -1,0 +1,6 @@
+[submodule "submodules/vs-avalonia"]
+	path = submodules/vs-avalonia
+	url = https://github.com/quanzhuo/vs-avalonia
+[submodule "submodules/solution-parser"]
+	path = submodules/solution-parser
+	url = https://github.com/quanzhuo/solution-parser

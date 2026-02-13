@@ -47,6 +47,6 @@ export function getLanguageServerPath() {
 	if (!avaloniaExtn) {
 		throw new Error("Could not find Avalonia extension.");
 	}
-	const serverLocation = path.join(avaloniaExtn.extensionPath, "avaloniaServer", "AvaloniaLanguageServer.dll");
+	const serverLocation = path.join(avaloniaExtn.extensionPath, "avaloniaServer", "LanguageServer.dll");
 	return serverLocation;
 }

@@ -12,25 +12,26 @@ Welcome to Avalonia Extension for VS Code! We appreciate your interest in contri
 
    See: https://github.com/nvm-sh/nvm for the latest version of this command.
 
-3. Install yarn
-   yarn can be installed with the following command:
-    
-    `npm install -g yarn`
-
-4. Latest Visual Studio Code
+3. Latest Visual Studio Code
 
 ## Set up
 
 1. Fork and Clone the repository
 
-    `git clone --recursive https://github.com/AvaloniaUI/AvaloniaVSCode`
+    `git clone --recursive https://github.com/quanzhuo/avalonia-tools`
 
 2. Update submodules
 This extension uses git submodules to pull in the Solution Parser and the Avalonia Visual Studio repo. Run the following to pull in the submodules:
 
     `git submodule update --init --recursive`
 
-3. Run the `build.sh`, currently repo does not have build script for Windows
+3. Install dependencies
+
+    `npm install`
+
+4. Build the extension
+
+    `vsce package`
 
 ## How to contribute
 

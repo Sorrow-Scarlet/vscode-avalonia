@@ -1,16 +1,16 @@
 {
-  "name": "vscode-avalonia",
+  "name": "avalonia-tools",
   "displayName": "Avalonia for VSCode",
-  "description": "Avalonia tools for Visual Studio Code",
-  "publisher": "AvaloniaTeam",
-  "version": "0.0.32",
+  "description": "Avalonia support for Visual Studio Code",
+  "publisher": "quanzhuo",
+  "version": "0.1.0",
   "license": "MIT",
   "preview": true,
   "qna": "false",
   "sponsor": {
-    "url": "https://github.com/sponsors/AvaloniaUI"
+    "url": "https://github.com/quanzhuo/vscode-avalonia"
   },
-  "icon": "./media/icon.png",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -27,11 +27,11 @@
     "theme": "dark"
   },
   "bugs": {
-    "url": "https://github.com/AvaloniaUI/AvaloniaVSCode/issues"
+    "url": "https://github.com/quanzhuo/vscode-avalonia/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AvaloniaUI/AvaloniaVSCode"
+    "url": "https://github.com/quanzhuo/vscode-avalonia"
   },
   "activationEvents": [
     "workspaceContains:**/*.axaml",
@@ -131,11 +131,12 @@
     ]
   },
   "scripts": {
-    "install:all": "yarn install",
-    "vscode:prepublish": "yarn run compile",
+    "install:all": "npm install",
+    "build-tool": "rimraf avaloniaServer solutionParserTool && dotnet build src/LanguageServer/LanguageServer.csproj /property:GenerateFullPaths=true --output avaloniaServer && dotnet build submodules/solution-parser/SolutionParser.csproj /property:GenerateFullPaths=true --output solutionParserTool",
+    "vscode:prepublish": "npm run build-tool && npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
+    "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
@@ -151,6 +152,7 @@
     "@vscode/test-electron": "^2.2.3",
     "eslint": "^8.34.0",
     "mocha": "^10.2.0",
+    "rimraf": "^6.1.2",
     "typescript": "^4.9.5"
   },
   "dependencies": {

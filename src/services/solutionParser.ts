@@ -10,7 +10,7 @@ import { spawn } from "child_process";
 import { AppConstants, logger } from "../util/Utilities";
 import { getDotnetRuntimePath } from "../runtimeManager";
 
-const extensionId = "AvaloniaTeam.vscode-avalonia";
+const extensionId = "quanzhuo.avalonia-tools";
 
 /**
  * Builds the solution model by parsing the solution file and updating the workspace state.
