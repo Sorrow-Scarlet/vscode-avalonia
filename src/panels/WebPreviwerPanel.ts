@@ -36,7 +36,7 @@ export class WebPreviewerPanel {
 				enableScripts: true,
 			}
 		);
-		WebPreviewerPanel.currentPanel = new WebPreviewerPanel(panel, url, processManager);
+		WebPreviewerPanel.currentPanel = new WebPreviewerPanel(panel, url, processManager, fileUri);
 
 		this.updateTitle(fileUri);
 		WebPreviewerPanel.currentPanel._panel.iconPath = {
@@ -55,7 +55,8 @@ export class WebPreviewerPanel {
 	private constructor(
 		panel: vscode.WebviewPanel,
 		url: string,
-		private readonly _processManager?: PreviewProcessManager
+		private readonly _processManager?: PreviewProcessManager,
+		private readonly _fileUri?: vscode.Uri
 	) {
 		this._panel = panel;
 
@@ -104,7 +105,11 @@ export class WebPreviewerPanel {
             </style>
         </head>
         <body class="background">
-            <iframe class="preview" src="${url}" style="width:100%; height:100vh;" frameborder="0"/>
+            <iframe class="preview" src="${url}" style="width:100%; height:100vh;" frameborder="0"></iframe>
+			<script>
+				const vscode = acquireVsCodeApi();
+				vscode.setState({ file: "${this._fileUri?.toString()}" });
+			</script>
         </body>
         </html>`;
 	}

@@ -7,6 +7,7 @@ import { registerAvaloniaCommands } from "./commands";
 import { CommandManager } from "./commandManager";
 import * as util from "./util/Utilities";
 import { AppConstants, logger } from "./util/Utilities";
+import { WebPreviewerPanel } from "./panels/WebPreviwerPanel";
 
 let languageClient: lsp.LanguageClient | null = null;
 
@@ -15,6 +16,17 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const commandManager = new CommandManager();
 	context.subscriptions.push(registerAvaloniaCommands(commandManager, context));
+
+	context.subscriptions.push(
+		vscode.window.registerWebviewPanelSerializer(WebPreviewerPanel.viewType, {
+			async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
+				webviewPanel.dispose();
+				if (state && state.file) {
+					vscode.commands.executeCommand(AppConstants.showPreviewToSideCommand, vscode.Uri.parse(state.file));
+				}
+			},
+		})
+	);
 
 	if (!vscode.workspace.workspaceFolders) {
 		return;
