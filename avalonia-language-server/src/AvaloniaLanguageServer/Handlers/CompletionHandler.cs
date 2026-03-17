@@ -1,4 +1,5 @@
 using AvaloniaLanguageServer.Models;
+using AvaloniaLanguageServer.CompletionEngine;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace AvaloniaLanguageServer.Handlers;
@@ -47,15 +48,32 @@ public class CompletionHandler : CompletionHandlerBase
         }
 
         var set = _completionEngine.GetCompletions(metadata!, text, text.Length);
+        var prependOpenBracket = false;
+
+        // Ctrl+Space in element body keeps parser state at None; emulate a just-typed '<'
+        // so tag completion can still be offered as an explicit user action.
+        if (set == null
+            && request.Context?.TriggerKind == CompletionTriggerKind.Invoked
+            && XmlParser.Parse(text).State == XmlParser.ParserState.None)
+        {
+            var fallbackText = text + "<";
+            set = _completionEngine.GetCompletions(metadata!, fallbackText, fallbackText.Length);
+            prependOpenBracket = set != null;
+        }
 
         var completions = set?.Completions
             .Where(p => !p.DisplayText.Contains('`'))
-            .Select(p => new CompletionItem
+            .Select(p =>
             {
-                Label = p.DisplayText,
-                Detail = p.Description,
-                InsertText = p.InsertText,
-                Kind = GetCompletionItemKind(p.Kind),
+                var insertBehavior = BuildInsertText(p.InsertText, p.Kind, prependOpenBracket);
+                return new CompletionItem
+                {
+                    Label = p.DisplayText,
+                    Detail = p.Description,
+                    InsertText = insertBehavior.InsertText,
+                    InsertTextFormat = insertBehavior.InsertTextFormat,
+                    Kind = GetCompletionItemKind(p.Kind),
+                };
             });
 
 
@@ -97,6 +115,24 @@ public class CompletionHandler : CompletionHandlerBase
         _getServer = getServer;
 
         _completionEngine = new CompletionEngine.CompletionEngine();
+    }
+
+    internal static (string InsertText, InsertTextFormat InsertTextFormat) BuildInsertText(string insertText, CompletionEngine.CompletionKind completionKind, bool prependOpenBracket)
+    {
+        if (!prependOpenBracket || insertText.StartsWith("<", StringComparison.Ordinal))
+            return (insertText, InsertTextFormat.PlainText);
+
+        if (completionKind == CompletionEngine.CompletionKind.Class
+            && !insertText.StartsWith("/", StringComparison.Ordinal)
+            && !insertText.EndsWith(".", StringComparison.Ordinal))
+        {
+            var closingTagName = insertText.Split(new[] { ' ', '\t', '\r', '\n' }, 2)[0];
+            return string.IsNullOrWhiteSpace(closingTagName)
+                ? ("<" + insertText, InsertTextFormat.PlainText)
+                : ($"<{insertText}>$0</{closingTagName}>", InsertTextFormat.Snippet);
+        }
+
+        return ("<" + insertText, InsertTextFormat.PlainText);
     }
 
     static CompletionItemKind GetCompletionItemKind(CompletionEngine.CompletionKind completionKind)
