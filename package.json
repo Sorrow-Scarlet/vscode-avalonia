@@ -3,7 +3,7 @@
   "displayName": "Avalonia for VSCode",
   "description": "Avalonia support for Visual Studio Code",
   "publisher": "quanzhuo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "preview": true,
   "qna": "false",
