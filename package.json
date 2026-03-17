@@ -6,9 +6,6 @@
   "version": "0.2.0",
   "license": "MIT",
   "qna": "false",
-  "sponsor": {
-    "url": "https://github.com/quanzhuo/vscode-avalonia"
-  },
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.79.0"
