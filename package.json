@@ -1,7 +1,7 @@
 {
   "name": "avalonia-tools",
-  "displayName": "Avalonia for VSCode",
-  "description": "Avalonia support for Visual Studio Code",
+  "displayName": "Avalonia Tools",
+  "description": "Unofficial Avalonia support for Visual Studio Code",
   "publisher": "quanzhuo",
   "version": "0.2.0",
   "license": "MIT",
@@ -167,8 +167,5 @@
     "tree-kill": "^1.2.2",
     "vscode-languageclient": "^8.1.0",
     "xpath": "^0.0.32"
-  },
-  "extensionDependencies": [
-    "ms-dotnettools.vscode-dotnet-runtime"
-  ]
+  }
 }
