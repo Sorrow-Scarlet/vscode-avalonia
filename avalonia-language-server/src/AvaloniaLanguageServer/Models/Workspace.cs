@@ -1,47 +1,22 @@
-using System.Collections.Concurrent;
+using System.Text.Json;
+using AvaloniaLanguageServer.CompletionEngine;
+using AvaloniaLanguageServer.CompletionEngine.AssemblyMetadata;
+using AvaloniaLanguageServer.CompletionEngine.MetadataProviders;
 using AvaloniaLanguageServer.Services;
 
 namespace AvaloniaLanguageServer.Models;
 
 public class Workspace
 {
-    public Workspace(BufferService bufferService, CompletionMetadataService completionMetadataService)
-    {
-        BufferService = bufferService;
-        _completionMetadataService = completionMetadataService;
-    }
+    public ProjectInfo? ProjectInfo { get; private set; }
+    public BufferService BufferService { get; } = new();
 
-    public BufferService BufferService { get; }
-
-    public async Task<DocumentContext> OpenDocumentAsync(DocumentUri uri, string? rootPath)
-    {
-        var context = await CreateDocumentContextAsync(uri, rootPath);
-        _documents[uri] = context;
-        return context;
-    }
-
-    public async Task<DocumentContext> GetDocumentContextAsync(DocumentUri uri, string? rootPath)
-    {
-        if (_documents.TryGetValue(uri, out var context))
-        {
-            return context;
-        }
-
-        return await OpenDocumentAsync(uri, rootPath);
-    }
-
-    public bool RemoveDocument(DocumentUri uri)
-    {
-        return _documents.TryRemove(uri, out _);
-    }
-
-    private async Task<DocumentContext> CreateDocumentContextAsync(DocumentUri uri, string? rootPath)
+    public async Task InitializeAsync(DocumentUri uri, string? rootPath)
     {
         try
         {
-            var projectInfo = await ProjectInfo.GetProjectInfoAsync(uri);
-            var completionMetadata = _completionMetadataService.GetForRootPath(rootPath);
-            return new DocumentContext(uri, projectInfo, completionMetadata);
+            ProjectInfo = await ProjectInfo.GetProjectInfoAsync(uri);
+            CompletionMetadata = BuildCompletionMetadata(rootPath);
         }
         catch (Exception e)
         {
@@ -49,6 +24,38 @@ public class Workspace
         }
     }
 
-    private readonly ConcurrentDictionary<DocumentUri, DocumentContext> _documents = new();
-    private readonly CompletionMetadataService _completionMetadataService;
+    Metadata? BuildCompletionMetadata(string? rootPath)
+    {
+        if (rootPath == null)
+            return null;
+
+        var slnFile = SolutionName(rootPath) ?? Path.GetFileNameWithoutExtension(rootPath);
+        if (slnFile == null)
+            return null;
+
+        var slnFilePath = Path.Combine(Path.GetTempPath(), $"{slnFile}.json");
+        if (!File.Exists(slnFilePath))
+            return null;
+
+        string content = File.ReadAllText(slnFilePath);
+        var package = JsonSerializer.Deserialize<SolutionData>(content);
+        var exeProj = package!.GetExecutableProject();
+
+        return _metadataReader.GetForTargetAssembly(exeProj?.TargetPath ?? string.Empty);
+    }
+
+    string? SolutionName(string rootPath)
+    {
+        var slnFiles = Directory.EnumerateFiles(rootPath, "*.sln", SearchOption.AllDirectories);
+        foreach (string slnFile in slnFiles)
+        {
+            return Path.GetFileName(slnFile);
+        }
+
+        return null;
+    }
+
+    public Metadata? CompletionMetadata { get; private set; }
+
+    readonly MetadataReader _metadataReader = new(new DnlibMetadataProvider());
 }

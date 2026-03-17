@@ -1,18 +1,17 @@
 ﻿using AvaloniaLanguageServer.Handlers;
-using AvaloniaLanguageServer.CompletionEngine.AssemblyMetadata;
-using AvaloniaLanguageServer.CompletionEngine.MetadataProviders;
 using AvaloniaLanguageServer.Models;
-using AvaloniaLanguageServer.Services;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace AvaloniaLanguageServer;
 
 public class Program
 {
+    static ILanguageServer? server;
+
     public static async Task Main(string[] args)
     {
         InitializeLogging();
-        var server = await LanguageServer.From(ConfigureOptions);
+        server = await LanguageServer.From(ConfigureOptions);
 
         Log.Logger.Information("Language server initialised");
         await server.WaitForExit;
@@ -31,31 +30,28 @@ public class Program
             .WithHandler<CompletionHandler>()
             .WithHandler<TextDocumentSyncHandler>()
             .WithServices(ConfigureServices)
-            .OnInitialize((server, request, token) =>
+            .OnInitialize((init_server, request, token) =>
             {
-                var workspaceContext = server.Services.GetRequiredService<WorkspaceContext>();
-                workspaceContext.Initialize(request);
+                server = init_server;
                 return Task.CompletedTask;
             });
     }
 
     static void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton(new ConfigurationItem { Section = ServerContract.ConfigurationSection });
+        services.AddSingleton(new ConfigurationItem { Section = "Avalonia Server" });
         services.AddSingleton(new DocumentSelector(
-            new DocumentFilter { Pattern = ServerContract.DocumentPattern, Language = ServerContract.DocumentLanguageId }
+            new DocumentFilter { Pattern = "**/*.axaml" }
         ));
-        services.AddSingleton<IMetadataProvider, DnlibMetadataProvider>();
-        services.AddSingleton<MetadataReader>();
-        services.AddSingleton<CompletionMetadataService>();
-        services.AddSingleton<BufferService>();
-        services.AddSingleton<WorkspaceContext>();
         services.AddSingleton<Workspace>();
+        services.AddSingleton(GetServer);
     }
+
+    static ILanguageServer? GetServer() => server;
 
     static void InitializeLogging()
     {
-        string logFilePath = Path.Combine(Path.GetTempPath(), ServerContract.DefaultLogFileName);
+        string logFilePath = Path.Combine(Path.GetTempPath(), "avalonia.log");
         Log.Logger = new LoggerConfiguration()
             .WriteTo.File(logFilePath)
             .Enrich.FromLogContext()
