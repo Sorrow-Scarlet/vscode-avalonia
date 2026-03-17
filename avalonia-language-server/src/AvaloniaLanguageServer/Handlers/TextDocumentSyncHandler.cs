@@ -1,4 +1,5 @@
 using AvaloniaLanguageServer.Models;
+using AvaloniaLanguageServer.Services;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -12,7 +13,7 @@ public class TextDocumentSyncHandler: TextDocumentSyncHandlerBase
     private readonly ILanguageServerConfiguration _configuration;
     private readonly DocumentSelector _documentSelector;
     private readonly Workspace _workspace;
-    private readonly Func<ILanguageServer?> _getServer;
+    private readonly WorkspaceContext _workspaceContext;
 
 
     public override async Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
@@ -25,7 +26,7 @@ public class TextDocumentSyncHandler: TextDocumentSyncHandlerBase
         conf.GetSection(ServerContract.ConfigurationSection).Bind(options);
 
         string text = request.TextDocument.Text;
-        await _workspace.InitializeAsync(uri, _getServer()?.Client.ClientSettings.RootPath);
+    await _workspace.OpenDocumentAsync(uri, _workspaceContext.RootPath);
         _workspace.BufferService.Add(uri, text);
         
         _logger.LogInformation("** DidOpenText: {Uri}", uri);
@@ -65,6 +66,7 @@ public class TextDocumentSyncHandler: TextDocumentSyncHandlerBase
 
         var uri = request.TextDocument.Uri;
         _workspace.BufferService.Remove(uri);
+    _workspace.RemoveDocument(uri);
         
         _logger.LogInformation("** Did Close Doc: {Uri}", uri);
 
@@ -92,13 +94,13 @@ public class TextDocumentSyncHandler: TextDocumentSyncHandlerBase
         ILanguageServerConfiguration configuration,
         DocumentSelector documentSelector,
         Workspace workspace,
-        Func<ILanguageServer?> getServer)
+        WorkspaceContext workspaceContext)
     {
         _logger = logger;
         _configuration = configuration;
         _documentSelector = documentSelector;
         _workspace = workspace;
-        _getServer = getServer;
+        _workspaceContext = workspaceContext;
     }
     
     public class ServerOptions

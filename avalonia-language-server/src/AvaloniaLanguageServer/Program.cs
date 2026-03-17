@@ -1,16 +1,18 @@
 ﻿using AvaloniaLanguageServer.Handlers;
+using AvaloniaLanguageServer.CompletionEngine.AssemblyMetadata;
+using AvaloniaLanguageServer.CompletionEngine.MetadataProviders;
 using AvaloniaLanguageServer.Models;
+using AvaloniaLanguageServer.Services;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace AvaloniaLanguageServer;
 
 public class Program
 {
-    static ILanguageServer? server;
     public static async Task Main(string[] args)
     {
         InitializeLogging();
-        server = await LanguageServer.From(ConfigureOptions);
+        var server = await LanguageServer.From(ConfigureOptions);
 
         Log.Logger.Information("Language server initialised");
         await server.WaitForExit;
@@ -29,9 +31,10 @@ public class Program
             .WithHandler<CompletionHandler>()
             .WithHandler<TextDocumentSyncHandler>()
             .WithServices(ConfigureServices)
-            .OnInitialize((init_server, request, token) =>
+            .OnInitialize((server, request, token) =>
             {
-                server = init_server;
+                var workspaceContext = server.Services.GetRequiredService<WorkspaceContext>();
+                workspaceContext.Initialize(request);
                 return Task.CompletedTask;
             });
     }
@@ -42,11 +45,13 @@ public class Program
         services.AddSingleton(new DocumentSelector(
             new DocumentFilter { Pattern = ServerContract.DocumentPattern, Language = ServerContract.DocumentLanguageId }
         ));
+        services.AddSingleton<IMetadataProvider, DnlibMetadataProvider>();
+        services.AddSingleton<MetadataReader>();
+        services.AddSingleton<CompletionMetadataService>();
+        services.AddSingleton<BufferService>();
+        services.AddSingleton<WorkspaceContext>();
         services.AddSingleton<Workspace>();
-        services.AddSingleton(GetServer);
     }
-
-    static ILanguageServer? GetServer() => server;
 
     static void InitializeLogging()
     {

@@ -6,6 +6,16 @@ Avalonia is a cross-platform XAML-based UI framework providing a flexible stylin
 
 The Avalonia for Visual Studio Code Extension contains support for Avalonia XAML autocomplete and previewer.
 
+## Repository layout
+
+The language server now has a standalone project entry point at `avalonia-language-server/AvaloniaLanguageServer.csproj`.
+
+Its vendored completion engine dependencies also live under `avalonia-language-server/src`, which removes the active build dependency on the `vs-avalonia` submodule projects.
+
+The language server source itself has been moved out of `src/LanguageServer` and now lives under `avalonia-language-server/src/LanguageServer`.
+
+The VS Code extension still consumes the same output assembly, but server development can now start moving toward an editor-neutral project structure.
+
 Follow the [contribution guide](CONTRIBUTING.md) if you want to help us build the extension
 
 > **NOTE:** Requires .NET 9.0

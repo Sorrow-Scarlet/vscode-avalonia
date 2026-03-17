@@ -128,7 +128,7 @@
   },
   "scripts": {
     "install:all": "npm install",
-    "build-tool": "rimraf avaloniaServer solutionParserTool && dotnet build src/LanguageServer/LanguageServer.csproj /property:GenerateFullPaths=true --output avaloniaServer && dotnet build submodules/solution-parser/SolutionParser.csproj /property:GenerateFullPaths=true --output solutionParserTool",
+    "build-tool": "rimraf avaloniaServer solutionParserTool && dotnet build avalonia-language-server/src/AvaloniaLanguageServer/AvaloniaLanguageServer.csproj /property:GenerateFullPaths=true --output avaloniaServer && dotnet build tools/SolutionParser/SolutionParser.csproj /property:GenerateFullPaths=true --output solutionParserTool",
     "vscode:prepublish": "npm run build-tool && npm run esbuild-base -- --production --sourcemap",
     "esbuild-base": "rimraf out && node esbuild.js",
     "esbuild": "npm run esbuild-base -- --sourcemap",

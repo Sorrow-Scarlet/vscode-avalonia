@@ -9,7 +9,7 @@ public class BufferService
     
     public void Add(DocumentUri key, string text)
     {
-        _buffers.TryAdd(key, new Buffer(text));
+        _buffers.AddOrUpdate(key, new Buffer(text), (_, _) => new Buffer(text));
     }
 
     public void Remove(DocumentUri key)
@@ -19,20 +19,26 @@ public class BufferService
 
     public string? GetTextTillPosition(DocumentUri key, Position position)
     {
-        return _buffers[key].GetTextTillLine(position);
+        return _buffers.TryGetValue(key, out var buffer)
+            ? buffer.GetTextTillLine(position)
+            : null;
     }
 
     public void ApplyFullChange(DocumentUri key, string text)
     {
-        var buffer = _buffers[key];
-        _buffers.TryUpdate(key, new Buffer(text), buffer);
+        if (_buffers.TryGetValue(key, out var buffer))
+        {
+            _buffers.TryUpdate(key, new Buffer(text), buffer);
+        }
     }
     
     public void ApplyIncrementalChange(DocumentUri key, Range range, string text)
     {
-        var buffer = _buffers[key];
-        var newText = Splice(buffer.GetText(), range, text);
-        _buffers.TryUpdate(key, new Buffer(newText), buffer);
+        if (_buffers.TryGetValue(key, out var buffer))
+        {
+            var newText = Splice(buffer.GetText(), range, text);
+            _buffers.TryUpdate(key, new Buffer(newText), buffer);
+        }
     }
     
     private static int GetIndex(string buffer, Position position)

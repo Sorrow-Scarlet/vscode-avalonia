@@ -1,29 +1,13 @@
-using Avalonia.Ide.CompletionEngine;
+using AvaloniaLanguageServer.CompletionEngine;
 using AvaloniaLanguageServer.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using AvaloniaLanguageServer.Services;
 
 namespace AvaloniaLanguageServer.Handlers;
 
 public class CompletionHandler : CompletionHandlerBase
 {
     public override Task<CompletionItem> Handle(CompletionItem request, CancellationToken cancellationToken)
-    {
-        if (request.InsertText == null || !NeedResolve())
-            return Task.FromResult(request);
-
-        var ci = new CompletionItem
-        {
-            Label = request.Label,
-            Kind = request.Kind,
-            InsertText = request.InsertText,
-            Command = Command.Create(ServerContract.InsertPropertyCommand, new { repositionCaret = RepositionCaret() })
-        };
-
-        return Task.FromResult(ci);
-
-        bool NeedResolve() => request.InsertText!.EndsWith(".") || request.InsertText!.EndsWith("\"");
-        bool RepositionCaret() => request.InsertText!.EndsWith("\"\"");
-    }
+        => Task.FromResult(request);
 
     public override async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
     {
@@ -31,23 +15,14 @@ public class CompletionHandler : CompletionHandlerBase
         if (text == null)
             return new CompletionList();
 
-        var metadata = await InitializeCompletionEngineAsync(request.TextDocument.Uri);
-        if (metadata == null)
+        var context = await _workspace.GetDocumentContextAsync(request.TextDocument.Uri, _workspaceContext.RootPath);
+        if (context.ProjectInfo is not { IsAssemblyExist: true } || context.CompletionMetadata == null)
         {
-            return new CompletionList(new[]
-            {
-                new CompletionItem
-                {
-                    Label = "Build the project",
-                    Documentation = new StringOrMarkupContent("Build the project to enable code completion"),
-                    Kind = CompletionItemKind.Event,
-                    Command = Command.Create(ServerContract.CreatePreviewerAssetsCommand, new {triggerCodeComplete = true}),
-                    InsertText = " "
-                }
-            });
+            return new CompletionList();
         }
 
-        var set = _completionEngine.GetCompletions(metadata!, text, text.Length);
+        var completionEngine = new AvaloniaLanguageServer.CompletionEngine.CompletionEngine();
+        var set = completionEngine.GetCompletions(context.CompletionMetadata, text, text.Length);
 
         var completions = set?.Completions
             .Where(p => !p.DisplayText.Contains('`'))
@@ -74,30 +49,15 @@ public class CompletionHandler : CompletionHandlerBase
             DocumentSelector = _documentSelector,
             TriggerCharacters = new Container<string>(_triggerChars),
             AllCommitCharacters = new Container<string>("\n"),
-            ResolveProvider = true
+            ResolveProvider = false
         };
     }
 
-    async Task<Metadata?> InitializeCompletionEngineAsync(DocumentUri uri)
-    {
-        if (_workspace.ProjectInfo is not { IsAssemblyExist: true })
-            return null;
-
-        if (_workspace.ProjectInfo.IsAssemblyExist && _workspace.CompletionMetadata == null)
-        {
-            await _workspace.InitializeAsync(uri, _getServer()?.Client.ClientSettings.RootPath);
-        }
-
-        return _workspace.CompletionMetadata;
-    }
-
-    public CompletionHandler(Workspace workspace, DocumentSelector documentSelector, Func<ILanguageServer?> getServer)
+    public CompletionHandler(Workspace workspace, DocumentSelector documentSelector, WorkspaceContext workspaceContext)
     {
         _workspace = workspace;
         _documentSelector = documentSelector;
-        _getServer = getServer;
-
-        _completionEngine = new CompletionEngine();
+        _workspaceContext = workspaceContext;
     }
 
     static CompletionItemKind GetCompletionItemKind(CompletionKind completionKind)
@@ -108,7 +68,7 @@ public class CompletionHandler : CompletionHandlerBase
         {
             _ when name.Contains("Property") || name.Contains("AttachedProperty") => CompletionItemKind.Property,
             _ when name.Contains("Event") => CompletionItemKind.Event,
-            _ when name.Contains("Namespace") || name.Contains("VS_XMLNS") => CompletionItemKind.Module,
+            _ when name.Contains("Namespace") || name.Contains("XmlNamespace") => CompletionItemKind.Module,
             _ when name.Contains("MarkupExtension") => CompletionItemKind.Class,
             _ => GetRest(name)
         };
@@ -124,9 +84,7 @@ public class CompletionHandler : CompletionHandlerBase
 
     readonly Workspace _workspace;
     readonly DocumentSelector _documentSelector;
-    readonly Func<ILanguageServer?> _getServer;
-
-    readonly CompletionEngine _completionEngine;
+    readonly WorkspaceContext _workspaceContext;
 
     readonly string[] _triggerChars = { "\'", "\"", " ", "<", ".", "[", "(", "#", "|", "/", "{" };
 }

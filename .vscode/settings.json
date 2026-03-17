@@ -8,5 +8,5 @@
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
-    "dotnet.defaultSolution": "src/LanguageServer/LanguageServer.sln"
+    "dotnet.defaultSolution": "avalonia-language-server/AvaloniaLanguageServer.sln"
 }
