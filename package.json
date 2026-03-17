@@ -22,10 +22,6 @@
     "Avalonia",
     "AvaloniaUI"
   ],
-  "galleryBanner": {
-    "color": "#161C2D",
-    "theme": "dark"
-  },
   "bugs": {
     "url": "https://github.com/quanzhuo/vscode-avalonia/issues"
   },
